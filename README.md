@@ -1,48 +1,30 @@
-# CUDA Code Explanation
+## CUDA Parallel Merge Sort Implementation
 
-This repository contains CUDA code for performing parallel merge operations on sorted arrays using both row-major and column-major storage formats. The code demonstrates how to utilize GPU acceleration to merge large sets of data efficiently.
+**Problem Scenario:**
+The program implements a parallel merge sort algorithm using CUDA (Compute Unified Device Architecture), which is a parallel computing platform and programming model developed by NVIDIA. The objective is to efficiently sort multiple sets of data arrays using GPU parallelism, leveraging CUDA's ability to perform computations in parallel across multiple threads.
 
-## Code Structure
+**Key Components and Actions:**
+1. **Data Initialization and Sorting:**
+   - Two arrays (`host_array1` and `host_array2`) of size `DSIZE * NUM_SETS` are initialized with random integers.
+   - These arrays are sorted using the Thrust library's `thrust::sort` function, which is optimized for GPU acceleration.
 
-### 1. Constants and Macros
+2. **CUDA Kernels for Merge Operations:**
+   - **Row-Major Merge Kernel (`row_major_merge`):** This kernel merges pairs of sorted arrays (`device_array1` and `device_array2`) row by row.
+     - Each thread handles a portion of the arrays, ensuring parallel execution across the GPU.
+     - The merged result is stored in `device_result`.
 
-- `NUM_SETS`: Number of sets of arrays to merge.
-- `DSIZE`: Size of each array in a set.
-- `mytype`: Typedef for the data type of array elements.
-- `cmp(X,Y)`: Macro for comparison of elements for ascending order.
-- `THREADS_PER_BLOCK`: Number of threads per CUDA block.
-- `BLOCKS_PER_GRID`: Number of CUDA blocks per grid.
-- `USECPSEC`: Microseconds per second for timing calculations.
+   - **Column-Major Merge Kernel (`column_major_merge`):** This kernel merges the same arrays, but column by column.
+     - It transposes the data to facilitate column-major merge operations, useful in scenarios where data access patterns are column-oriented.
+     - The merged result is stored in `device_result`.
 
-### 2. Helper Functions
+3. **Validation and Performance Measurement:**
+   - **Validation Functions (`validate_row_major` and `validate_column_major`):** These functions compare the results of the GPU merges (`host_result` and `host_result_col`) with CPU-validated results to ensure correctness.
+     - If discrepancies are found, error messages are printed, indicating a validation failure.
 
-- `time_usec(unsigned long long start)`: Calculates the current time in microseconds relative to a start time using `gettimeofday`.
-- `merge_arrays(const T * __restrict__ arr1, const T * __restrict__ arr2, T * __restrict__ result, const unsigned len_arr1, const unsigned len_arr2, const unsigned stride_arr1 = 1, const unsigned stride_arr2 = 1, const unsigned stride_result = 1)`: Merges two sorted arrays `arr1` and `arr2` into `result` using a merge sort algorithm. Can be executed on both host and device (CUDA) environments.
+   - **Time Measurement:** Execution times (`cpu_time` and `gpu_time`) are measured using `time_usec` function to compare CPU and GPU performance.
+     - CPU time measures the time taken for CPU-based merge validation.
+     - GPU time measures the time taken for GPU-based merge operations.
 
-### 3. CUDA Kernels
-
-- `row_major_merge(const T * __restrict__ arr1, const T * __restrict__ arr2, T * __restrict__ result, int num_arrays, int array_length)`: CUDA kernel for performing row-major merge of sorted arrays on the GPU. Each thread block handles one set of arrays, merging corresponding elements from `arr1` and `arr2` into `result`.
-  
-- `column_major_merge(const T * __restrict__ arr1, const T * __restrict__ arr2, T * __restrict__ result, int num_arrays, int array_length, int stride_arr1, int stride_arr2, int stride_result)`: CUDA kernel for performing column-major merge of sorted arrays on the GPU. Each thread block handles one element from each set of arrays, merging elements from `arr1` and `arr2` into `result`.
-
-### 4. Validation Functions
-
-- `validate_row_major(T *arr1, T *arr2, T *result, int num_arrays, int array_length)`: Validates the results of row-major merges against CPU-based merges using Thrust library functions. Compares each element of `result` against the expected merged result.
-  
-- `validate_column_major(const T *result1, const T *result2, int num_arrays, int array_length)`: Validates the results of column-major merges against row-major merges. Compares each element of `result1` against `result2` to ensure consistency across storage formats.
-
-### 5. Main Function (`main()`)
-
-- Allocates memory for host and device arrays.
-- Generates random data and sorts arrays in row-major format.
-- Executes row-major merge on the GPU, measures execution time, and validates results.
-- Transposes arrays into column-major format, executes column-major merge on the GPU, measures execution time, and validates results.
-- Outputs timing information and validation status.
-
-## Usage
-
-- Ensure CUDA Toolkit is installed and configured.
-- Compile the code using `nvcc`.
-- Run the executable to perform row-major and column-major merge operations on sorted arrays.
-
-
+4. **Output:**
+   - The program outputs the measured execution times (`CPU time`, `GPU row-major time`, and `GPU column-major time`) in seconds.
+   - Successful execution without validation failures indicates that the CUDA parallel merge sort implementation is correct and performs as expected.
