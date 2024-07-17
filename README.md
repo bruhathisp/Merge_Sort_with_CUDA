@@ -1,6 +1,3 @@
-
----
-
 # CUDA Code Explanation
 
 This repository contains CUDA code for performing parallel merge operations on sorted arrays using both row-major and column-major storage formats. The code demonstrates how to utilize GPU acceleration to merge large sets of data efficiently.
@@ -48,5 +45,4 @@ This repository contains CUDA code for performing parallel merge operations on s
 - Compile the code using `nvcc`.
 - Run the executable to perform row-major and column-major merge operations on sorted arrays.
 
----
 
